@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+<title>ARC-Room // Tactical Mesh Object Intake Lab</title>
+<style>
+:root{
+  --bg:#020403;
+  --panel:rgba(0,15,8,.88);
+  --panel2:rgba(0,255,65,.045);
+  --green:#00ff41;
+  --green2:rgba(0,255,65,.55);
+  --green3:rgba(0,255,65,.18);
+  --amber:#ffb000;
+  --red:#ff365a;
+  --cyan:#32e6ff;
+  --text:#d9ffe1;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;color:var(--green);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+button,input,select{font:inherit}
+#app{position:fixed;inset:0;background:radial-gradient(circle at 50% 30%,rgba(0,80,34,.22),transparent 55%),#000;}
+#view{position:absolute;inset:0;width:100%;height:100%;display:block;background:#000;cursor:crosshair;}
+#scanlines{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.25) 2px,rgba(0,0,0,.25) 4px);mix-blend-mode:multiply;opacity:.55}
+#vignette{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at center, transparent 45%, rgba(0,0,0,.62) 100%)}
+.panel{position:absolute;border:1px solid var(--green3);background:var(--panel);box-shadow:0 0 28px rgba(0,255,65,.08), inset 0 0 24px rgba(0,255,65,.035);backdrop-filter:blur(6px)}
+.top{left:10px;right:10px;top:10px;height:48px;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;z-index:5}
+.brand{font-weight:900;letter-spacing:.12em;color:var(--green);text-shadow:0 0 14px rgba(0,255,65,.45)}
+.brand small{display:block;color:var(--amber);font-size:10px;font-weight:700;letter-spacing:.16em;margin-top:2px}
+.stats{display:flex;gap:16px;font-size:11px;color:var(--green2);white-space:nowrap}.stats b{color:var(--text)}
+.left{left:10px;top:68px;bottom:74px;width:300px;padding:12px;z-index:5;overflow:auto}
+.right{right:10px;top:68px;bottom:74px;width:320px;padding:12px;z-index:5;overflow:auto}
+.console{left:10px;right:10px;bottom:10px;height:54px;z-index:6;display:flex;align-items:center;padding:8px 10px;gap:10px}
+.prompt{color:var(--amber);font-weight:900}.cmd{flex:1;background:rgba(0,0,0,.55);border:1px solid var(--green3);color:var(--text);padding:10px 12px;outline:none}.cmd:focus{border-color:var(--green);box-shadow:0 0 14px rgba(0,255,65,.18)}
+h2{font-size:12px;letter-spacing:.13em;color:var(--amber);margin:8px 0 10px;text-transform:uppercase;border-bottom:1px solid var(--green3);padding-bottom:6px}
+.muted{color:rgba(217,255,225,.62);font-size:11px;line-height:1.5}.tiny{font-size:10px;color:rgba(217,255,225,.45);line-height:1.45}.row{display:flex;gap:8px;align-items:center;margin:8px 0}.row label{width:72px;font-size:10px;color:var(--green2)}
+.btn{border:1px solid var(--green3);background:rgba(0,255,65,.04);color:var(--green);padding:8px 9px;cursor:pointer;text-align:center;font-size:11px;transition:.12s;display:inline-flex;align-items:center;justify-content:center;gap:6px}.btn:hover{background:rgba(0,255,65,.11);border-color:var(--green);box-shadow:0 0 16px rgba(0,255,65,.15)}.btn.primary{border-color:var(--green);font-weight:900}.btn.warn{border-color:rgba(255,176,0,.45);color:var(--amber)}.btn.danger{border-color:rgba(255,54,90,.55);color:var(--red)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}.full{width:100%}
+input[type=file]{display:none}.filedrop{border:1px dashed var(--green3);padding:12px;text-align:center;background:rgba(0,255,65,.025);margin:8px 0;color:var(--green2);font-size:11px}.filedrop.drag{border-color:var(--amber);color:var(--amber);background:rgba(255,176,0,.05)}
+.object-list{display:flex;flex-direction:column;gap:6px;margin-top:8px}.object-item{border:1px solid var(--green3);background:rgba(0,255,65,.035);padding:8px;cursor:pointer}.object-item.active{border-color:var(--amber);box-shadow:0 0 14px rgba(255,176,0,.13)}.object-item .name{font-size:11px;color:var(--text);font-weight:900}.object-item .meta{font-size:10px;color:var(--green2);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.log{height:112px;overflow:auto;border:1px solid var(--green3);background:rgba(0,0,0,.38);padding:8px;font-size:10px;line-height:1.45;color:var(--green2);margin-top:8px}.log .ok{color:var(--green)}.log .err{color:var(--red)}.log .warn{color:var(--amber)}
+input.num,input.txt{width:100%;background:rgba(0,0,0,.52);border:1px solid var(--green3);color:var(--text);padding:7px;outline:none;font-size:11px}.tabs{display:flex;gap:6px;margin:8px 0}.tab{flex:1}.kbd{color:#000;background:var(--amber);padding:1px 5px;border-radius:2px;font-weight:900}.badge{display:inline-block;border:1px solid var(--green3);padding:2px 5px;margin:2px;color:var(--green2);font-size:10px}.hidden-ui .left,.hidden-ui .right,.hidden-ui .top{display:none}.hidden-ui .console{opacity:.82}
+#toast{position:absolute;left:50%;top:72px;transform:translateX(-50%);z-index:8;border:1px solid var(--green3);background:rgba(0,10,5,.9);padding:8px 14px;color:var(--text);font-size:11px;opacity:0;transition:.2s;pointer-events:none}#toast.show{opacity:1}
+@media(max-width:900px){.left,.right{width:260px}.stats{display:none}}@media(max-width:720px){.left{display:none}.right{display:none}.top{height:auto}.console{height:58px}.brand{font-size:12px}}
+</style>
+</head>
+<body>
+<div id="app">
+  <canvas id="view"></canvas>
+  <div id="scanlines"></div><div id="vignette"></div><div id="toast"></div>
+  <div class="panel top">
+    <div class="brand">ARC-ROOM <small>TACTICAL MESH OBJECT INTAKE LAB // EMPTY SHELL</small></div>
+    <div class="stats">
+      <span>FPS <b id="fps">--</b></span><span>OBJECTS <b id="count">0</b></span><span>TRIS <b id="tris">0</b></span><span>SELECTED <b id="sel">none</b></span>
+    </div>
+  </div>
+  <aside class="panel left">
+    <h2>Object intake</h2>
+    <div id="drop" class="filedrop">Drop .OBJ / .STL here<br><span class="tiny">or choose files below</span></div>
+    <input id="file" type="file" accept=".obj,.stl,.json" multiple/>
+    <div class="grid2"><button class="btn primary" id="choose">Upload object</button><button class="btn" id="spawnCube">Spawn cube</button></div>
+    <div class="grid2" style="margin-top:8px"><button class="btn" id="spawnMarker">Spawn marker</button><button class="btn warn" id="clearAll">Clear room</button></div>
+    <h2>Objects</h2>
+    <div class="tiny">Click an object in the list or room. Use commands below for Minecraft-style control.</div>
+    <div id="objectList" class="object-list"></div>
+    <h2>Command log</h2>
+    <div id="log" class="log"></div>
+  </aside>
+  <aside class="panel right">
+    <h2>Inspector</h2>
+    <div id="inspector"><div class="muted">No object selected.</div></div>
+    <h2>Scene I/O</h2>
+    <div class="grid2"><button class="btn" id="exportJson">Export JSON</button><button class="btn" id="saveLocal">Save local</button></div>
+    <div class="grid2" style="margin-top:8px"><button class="btn" id="loadLocal">Load local</button><button class="btn danger" id="resetScene">Reset</button></div>
+    <h2>Quick commands</h2>
+    <div class="tiny">
+      <span class="badge">/help</span><span class="badge">/list</span><span class="badge">/select id</span><span class="badge">/scale id 2</span><span class="badge">/move id x y z</span><span class="badge">/rotate id y 90</span><span class="badge">/despawn id</span><span class="badge">/export json</span>
+    </div>
+    <h2>Controls</h2>
+    <div class="tiny"><span class="kbd">WASD</span> pan · <span class="kbd">drag</span> orbit · <span class="kbd">wheel</span> zoom · <span class="kbd">F1</span> HUD · <span class="kbd">DEL</span> despawn selected</div>
+  </aside>
+  <div class="panel console"><span class="prompt">&gt;</span><input id="cmd" class="cmd" spellcheck="false" placeholder="/help  |  /summon cube scale=2 at=0,0,0  |  /despawn selected"/></div>
+</div>
+<script>
+'use strict';
+const TAU=Math.PI*2;
+const canvas=document.getElementById('view');
+const ctx=canvas.getContext('2d',{alpha:false});
+const app=document.getElementById('app');
+const objectList=document.getElementById('objectList');
+const inspector=document.getElementById('inspector');
+const logEl=document.getElementById('log');
+const cmdEl=document.getElementById('cmd');
+const toastEl=document.getElementById('toast');
+const state={objects:[],selected:null,nextId:1,cam:{yaw:.72,pitch:.62,dist:18,panX:0,panY:0,panZ:0},keys:{},mouse:{down:false,x:0,y:0},stats:{fps:0,last:performance.now(),frames:0},grid:true,paused:false,receipts:[]};
+function resize(){const dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.floor(innerWidth*dpr);canvas.height=Math.floor(innerHeight*dpr);canvas.style.width=innerWidth+'px';canvas.style.height=innerHeight+'px';ctx.setTransform(dpr,0,0,dpr,0,0)}
+addEventListener('resize',resize);resize();
+function toast(msg,kind='ok'){toastEl.textContent=msg;toastEl.style.borderColor=kind==='err'?'rgba(255,54,90,.8)':kind==='warn'?'rgba(255,176,0,.8)':'rgba(0,255,65,.5)';toastEl.classList.add('show');clearTimeout(toastEl._t);toastEl._t=setTimeout(()=>toastEl.classList.remove('show'),1800)}
+function log(msg,kind='ok'){const div=document.createElement('div');div.className=kind;div.textContent='['+new Date().toLocaleTimeString()+'] '+msg;logEl.appendChild(div);logEl.scrollTop=logEl.scrollHeight}
+function uid(base='obj'){return base.replace(/[^a-z0-9_\-]/gi,'_').toLowerCase()+'_'+String(state.nextId++).padStart(3,'0')}
+function clone(v){return JSON.parse(JSON.stringify(v))}
+function addReceipt(command,before,after,ok=true,msg=''){state.receipts.push({id:'cmd_'+String(state.receipts.length+1).padStart(5,'0'),time:new Date().toISOString(),command,before,after,ok,msg})}
+function makeCube(){const v=[[-.5,-.5,-.5],[.5,-.5,-.5],[.5,.5,-.5],[-.5,.5,-.5],[-.5,-.5,.5],[.5,-.5,.5],[.5,.5,.5],[-.5,.5,.5]];const f=[[0,1,2],[0,2,3],[4,6,5],[4,7,6],[0,4,5],[0,5,1],[1,5,6],[1,6,2],[2,6,7],[2,7,3],[3,7,4],[3,4,0]];return {vertices:v,faces:f}}
+function makeMarker(){const v=[[0,1,0],[-.7,0,-.7],[.7,0,-.7],[.7,0,.7],[-.7,0,.7],[0,-1,0]];const f=[[0,1,2],[0,2,3],[0,3,4],[0,4,1],[5,2,1],[5,3,2],[5,4,3],[5,1,4]];return {vertices:v,faces:f}}
+function normalizeMesh(mesh,target=2){if(!mesh.vertices.length)return mesh;let min=[Infinity,Infinity,Infinity],max=[-Infinity,-Infinity,-Infinity];for(const p of mesh.vertices){for(let i=0;i<3;i++){min[i]=Math.min(min[i],p[i]);max[i]=Math.max(max[i],p[i])}}const center=[(min[0]+max[0])/2,(min[1]+max[1])/2,(min[2]+max[2])/2];const size=Math.max(max[0]-min[0],max[1]-min[1],max[2]-min[2])||1;const s=target/size;mesh.vertices=mesh.vertices.map(p=>[(p[0]-center[0])*s,(p[1]-center[1])*s,(p[2]-center[2])*s]);return mesh}
+function spawnMesh(mesh,name='object',opts={}){normalizeMesh(mesh,opts.norm||2);const id=uid(name.replace(/\.[^.]+$/,''));const obj={id,name,sourceFile:name,type:'uploaded-object',mesh,position:opts.position||[0,1,0],rotation:opts.rotation||[0,0,0],scale:opts.scale||[1,1,1],tags:opts.tags||['uploaded'],visible:true,locked:false,wire:true,bounds:true,color:opts.color||'#00ff41'};state.objects.push(obj);state.selected=id;log('spawned '+id+' from '+name);toast('Spawned '+id);refreshUI();return obj}
+function parseOBJ(text){const verts=[],faces=[];const lines=text.split(/\r?\n/);for(const line of lines){const t=line.trim();if(!t||t[0]==='#')continue;const parts=t.split(/\s+/);if(parts[0]==='v'&&parts.length>=4){verts.push([+parts[1],+parts[2],+parts[3]])}else if(parts[0]==='f'&&parts.length>=4){const idx=parts.slice(1).map(p=>parseInt(p.split('/')[0],10)-1).filter(n=>Number.isFinite(n)&&n>=0);for(let i=1;i<idx.length-1;i++)faces.push([idx[0],idx[i],idx[i+1]])}}return {vertices:verts,faces}}
+function parseSTL(buffer,name='model.stl'){const text=new TextDecoder().decode(buffer.slice(0,256));if(/^solid/i.test(text)&&new TextDecoder().decode(buffer).includes('facet normal'))return parseAsciiSTL(new TextDecoder().decode(buffer));return parseBinarySTL(buffer)}
+function parseAsciiSTL(text){const verts=[],faces=[];let tri=[];for(const m of text.matchAll(/vertex\s+([-+0-9.eE]+)\s+([-+0-9.eE]+)\s+([-+0-9.eE]+)/g)){verts.push([+m[1],+m[2],+m[3]]);tri.push(verts.length-1);if(tri.length===3){faces.push(tri);tri=[]}}return {vertices:verts,faces}}
+function parseBinarySTL(buffer){const dv=new DataView(buffer);const count=dv.getUint32(80,true);const verts=[],faces=[];let off=84;for(let i=0;i<count;i++){off+=12;const tri=[];for(let j=0;j<3;j++){verts.push([dv.getFloat32(off,true),dv.getFloat32(off+4,true),dv.getFloat32(off+8,true)]);tri.push(verts.length-1);off+=12}faces.push(tri);off+=2}return {vertices:verts,faces}}
+async function handleFiles(files){for(const file of files){const ext=file.name.split('.').pop().toLowerCase();try{if(ext==='obj'){spawnMesh(parseOBJ(await file.text()),file.name)}else if(ext==='stl'){spawnMesh(parseSTL(await file.arrayBuffer(),file.name),file.name)}else if(ext==='json'){loadScene(JSON.parse(await file.text()))}else{log('unsupported file: '+file.name,'err');toast('Unsupported: '+ext,'err')}}catch(e){console.error(e);log('failed to load '+file.name+': '+e.message,'err');toast('Load failed','err')}}}
+function rotPoint(p,r){let [x,y,z]=p;let cx=Math.cos(r[0]),sx=Math.sin(r[0]),cy=Math.cos(r[1]),sy=Math.sin(r[1]),cz=Math.cos(r[2]),sz=Math.sin(r[2]);let y1=y*cx-z*sx,z1=y*sx+z*cx;y=y1;z=z1;let x2=x*cy+z*sy,z2=-x*sy+z*cy;x=x2;z=z2;let x3=x*cz-y*sz,y3=x*sz+y*cz;return [x3,y3,z]}
+function worldPoint(obj,p){const q=[p[0]*obj.scale[0],p[1]*obj.scale[1],p[2]*obj.scale[2]];const r=rotPoint(q,obj.rotation);return [r[0]+obj.position[0],r[1]+obj.position[1],r[2]+obj.position[2]]}
+function cameraBasis(){const c=state.cam;const cy=Math.cos(c.yaw),sy=Math.sin(c.yaw),cp=Math.cos(c.pitch),sp=Math.sin(c.pitch);const eye=[c.panX+c.dist*sy*cp,c.panY+c.dist*sp,c.panZ+c.dist*cy*cp];const target=[c.panX,c.panY,c.panZ];const forward=norm([target[0]-eye[0],target[1]-eye[1],target[2]-eye[2]]);const right=norm([forward[2],0,-forward[0]]);const up=cross(right,forward);return {eye,forward,right,up}}
+function dot(a,b){return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]}function cross(a,b){return [a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]]}function norm(a){const l=Math.hypot(a[0],a[1],a[2])||1;return [a[0]/l,a[1]/l,a[2]/l]}
+function project(p,basis){const rel=[p[0]-basis.eye[0],p[1]-basis.eye[1],p[2]-basis.eye[2]];const x=dot(rel,basis.right),y=dot(rel,basis.up),z=dot(rel,basis.forward);if(z<.1)return null;const f=Math.min(innerWidth,innerHeight)*.82;return [innerWidth/2+(x/z)*f,innerHeight/2-(y/z)*f,z]}
+function drawLine3(a,b,basis,color='rgba(0,255,65,.25)',w=1){const pa=project(a,basis),pb=project(b,basis);if(!pa||!pb)return;ctx.strokeStyle=color;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(pa[0],pa[1]);ctx.lineTo(pb[0],pb[1]);ctx.stroke()}
+function drawGrid(basis){const n=20;for(let i=-n;i<=n;i++){const a=i===0?'rgba(255,176,0,.55)':'rgba(0,255,65,.15)';drawLine3([-n,0,i],[n,0,i],basis,a,i===0?1.5:1);drawLine3([i,0,-n],[i,0,n],basis,a,i===0?1.5:1)}const t=performance.now()/1000;const r=(t*5)%20;ctx.strokeStyle='rgba(50,230,255,.2)';ctx.lineWidth=1;ctx.beginPath();for(let i=0;i<96;i++){const a=i/96*TAU;const p=project([Math.cos(a)*r,0.01,Math.sin(a)*r],basis);if(p){if(i===0)ctx.moveTo(p[0],p[1]);else ctx.lineTo(p[0],p[1])}}ctx.closePath();ctx.stroke()}
+function objectBounds(obj){let min=[Infinity,Infinity,Infinity],max=[-Infinity,-Infinity,-Infinity];for(const p of obj.mesh.vertices){const q=worldPoint(obj,p);for(let i=0;i<3;i++){min[i]=Math.min(min[i],q[i]);max[i]=Math.max(max[i],q[i])}}return {min,max,size:[max[0]-min[0],max[1]-min[1],max[2]-min[2]]}}
+function drawBounds(obj,basis){const b=objectBounds(obj),m=b.min,M=b.max;const pts=[[m[0],m[1],m[2]],[M[0],m[1],m[2]],[M[0],M[1],m[2]],[m[0],M[1],m[2]],[m[0],m[1],M[2]],[M[0],m[1],M[2]],[M[0],M[1],M[2]],[m[0],M[1],M[2]]];const e=[[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];for(const [a,c] of e)drawLine3(pts[a],pts[c],basis,obj.id===state.selected?'rgba(255,176,0,.75)':'rgba(0,255,65,.22)',obj.id===state.selected?1.5:1)}
+function drawLabel(obj,basis){const b=objectBounds(obj);const p=project([(b.min[0]+b.max[0])/2,b.max[1]+.25,(b.min[2]+b.max[2])/2],basis);if(!p)return;ctx.font='11px monospace';ctx.textAlign='center';ctx.fillStyle=obj.id===state.selected?'#ffb000':'rgba(0,255,65,.75)';ctx.fillText(obj.id,p[0],p[1])}
+function drawObject(obj,basis){if(!obj.visible)return;const verts=obj.mesh.vertices.map(p=>worldPoint(obj,p));const edges=new Set();for(const f of obj.mesh.faces){for(let i=0;i<3;i++){const a=f[i],b=f[(i+1)%3];edges.add(a<b?a+','+b:b+','+a)}}const col=obj.id===state.selected?'rgba(255,176,0,.95)':'rgba(0,255,65,.5)';for(const e of edges){const [a,b]=e.split(',').map(Number);drawLine3(verts[a],verts[b],basis,col,obj.id===state.selected?1.2:.8)}if(obj.bounds)drawBounds(obj,basis);drawLabel(obj,basis)}
+function pickObject(x,y){const basis=cameraBasis();let best=null,bestD=28;for(const obj of state.objects){const b=objectBounds(obj);const p=project([(b.min[0]+b.max[0])/2,(b.min[1]+b.max[1])/2,(b.min[2]+b.max[2])/2],basis);if(!p)continue;const d=Math.hypot(p[0]-x,p[1]-y);if(d<bestD){best=obj;bestD=d}}if(best){state.selected=best.id;refreshUI();toast('Selected '+best.id)}}
+function draw(){const now=performance.now();state.stats.frames++;if(now-state.stats.last>500){state.stats.fps=Math.round(state.stats.frames*1000/(now-state.stats.last));state.stats.frames=0;state.stats.last=now;document.getElementById('fps').textContent=state.stats.fps}handleMove();ctx.fillStyle='#000';ctx.fillRect(0,0,innerWidth,innerHeight);const basis=cameraBasis();if(state.grid)drawGrid(basis);state.objects.sort((a,b)=>objectBounds(b).max[2]-objectBounds(a).max[2]).forEach(o=>drawObject(o,basis));drawHUDOverlay();requestAnimationFrame(draw)}
+function drawHUDOverlay(){ctx.save();ctx.strokeStyle='rgba(0,255,65,.17)';ctx.lineWidth=1;ctx.strokeRect(8,8,innerWidth-16,innerHeight-16);ctx.beginPath();ctx.moveTo(innerWidth/2-12,innerHeight/2);ctx.lineTo(innerWidth/2+12,innerHeight/2);ctx.moveTo(innerWidth/2,innerHeight/2-12);ctx.lineTo(innerWidth/2,innerHeight/2+12);ctx.stroke();ctx.restore()}
+function handleMove(){const s=.08*(state.keys.Shift?3:1);const c=state.cam;if(state.keys.w)c.panZ-=s;if(state.keys.s)c.panZ+=s;if(state.keys.a)c.panX-=s;if(state.keys.d)c.panX+=s;if(state.keys.q)c.panY-=s;if(state.keys.e)c.panY+=s}
+function refreshUI(){document.getElementById('count').textContent=state.objects.length;document.getElementById('tris').textContent=state.objects.reduce((a,o)=>a+o.mesh.faces.length,0);document.getElementById('sel').textContent=state.selected||'none';objectList.innerHTML='';for(const o of state.objects){const el=document.createElement('div');el.className='object-item'+(o.id===state.selected?' active':'');el.innerHTML='<div class="name">'+o.id+'</div><div class="meta">'+o.name+' · '+o.mesh.faces.length+' tris · scale '+o.scale.map(n=>n.toFixed(2)).join(',')+'</div>';el.onclick=()=>{state.selected=o.id;refreshUI()};objectList.appendChild(el)}renderInspector()}
+function selected(){return state.objects.find(o=>o.id===state.selected)||null}
+function renderInspector(){const o=selected();if(!o){inspector.innerHTML='<div class="muted">No object selected.</div>';return}const field=(label,key,idx)=>'<div class="row"><label>'+label+'</label><input class="num" data-key="'+key+'" data-idx="'+idx+'" value="'+o[key][idx].toFixed(3)+'"></div>';inspector.innerHTML='<div class="muted"><b style="color:var(--amber)">'+o.id+'</b><br>'+o.name+'</div>'+field('pos X','position',0)+field('pos Y','position',1)+field('pos Z','position',2)+field('rot X','rotation',0)+field('rot Y','rotation',1)+field('rot Z','rotation',2)+field('scale X','scale',0)+field('scale Y','scale',1)+field('scale Z','scale',2)+'<div class="grid2"><button class="btn" id="dupObj">Duplicate</button><button class="btn danger" id="delObj">Despawn</button></div><div class="grid2" style="margin-top:8px"><button class="btn" id="fitObj">Normalize</button><button class="btn" id="wireObj">Wire/Bounds</button></div>';
+inspector.querySelectorAll('input.num').forEach(inp=>inp.onchange=()=>{const obj=selected();obj[inp.dataset.key][+inp.dataset.idx]=+inp.value||0;refreshUI()});document.getElementById('delObj').onclick=()=>despawn(o.id);document.getElementById('dupObj').onclick=()=>duplicate(o.id);document.getElementById('fitObj').onclick=()=>{normalizeMesh(o.mesh,2);o.scale=[1,1,1];refreshUI();log('normalized '+o.id)};document.getElementById('wireObj').onclick=()=>{o.bounds=!o.bounds;refreshUI()}}
+function despawn(id){if(id==='selected')id=state.selected;if(id==='all'){state.objects=[];state.selected=null;refreshUI();log('despawned all');return}const before=clone(state.objects);state.objects=state.objects.filter(o=>o.id!==id);if(state.selected===id)state.selected=state.objects[0]?.id||null;addReceipt('/despawn '+id,before,clone(state.objects));refreshUI();log('despawned '+id)}
+function duplicate(id){const o=state.objects.find(x=>x.id===id);if(!o)return log('not found '+id,'err');const n=clone(o);n.id=uid(o.name||'copy');n.position[0]+=1;n.position[2]+=1;state.objects.push(n);state.selected=n.id;refreshUI();log('duplicated '+id+' -> '+n.id)}
+function exportScene(){return {app:'ARC-Room Tactical Mesh Object Intake Lab',version:'0.1.0',time:new Date().toISOString(),room:{units:'meters',gridSize:1,bounds:[40,10,40]},objects:state.objects.map(o=>({id:o.id,name:o.name,sourceFile:o.sourceFile,type:o.type,position:o.position,rotation:o.rotation,scale:o.scale,tags:o.tags,visible:o.visible,locked:o.locked,bounds:objectBounds(o),mesh:{vertices:o.mesh.vertices,faces:o.mesh.faces}})),receipts:state.receipts}}
+function loadScene(data){state.objects=[];state.selected=null;state.nextId=1;if(data.objects){for(const item of data.objects){state.objects.push({id:item.id||uid(item.name||'object'),name:item.name||item.id||'object',sourceFile:item.sourceFile||'scene.json',type:item.type||'loaded-object',mesh:item.mesh,position:item.position||[0,1,0],rotation:item.rotation||[0,0,0],scale:item.scale||[1,1,1],tags:item.tags||['loaded'],visible:item.visible!==false,locked:!!item.locked,wire:true,bounds:true,color:'#00ff41'});state.selected=state.objects[0]?.id||null}}refreshUI();log('loaded scene with '+state.objects.length+' objects')}
+function download(name,text,type='application/json'){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+function runCommand(raw){raw=raw.trim();if(!raw)return;if(raw[0]!=='/')raw='/'+raw;const before=clone(state.objects);const parts=raw.match(/(?:[^\s"]+|"[^"]*")+/g)||[];const name=parts[0].slice(1).toLowerCase();const args=parts.slice(1).map(s=>s.replace(/^"|"$/g,''));try{switch(name){case'help':log('commands: /list /select id /summon cube|marker scale=2 at=x,y,z /despawn id|selected|all /scale id n /move id x y z /rotate id x|y|z deg /duplicate id /export json /save name /load local /hud /grid','warn');break;case'list':log(state.objects.map(o=>o.id).join(', ')||'no objects');break;case'select':state.selected=args[0]==='first'?state.objects[0]?.id:args[0];refreshUI();log('selected '+state.selected);break;case'summon':{const asset=args[0]||'cube';const flags=parseFlags(args.slice(1));const mesh=asset==='marker'?makeMarker():makeCube();const sc=+(flags.scale||1);const at=flags.at?String(flags.at).split(',').map(Number):[0,1,0];spawnMesh(mesh,asset,{scale:[sc,sc,sc],position:at,tags:['summoned']});break}case'despawn':case'kill':despawn(args[0]||'selected');break;case'clear':despawn('all');break;case'duplicate':duplicate(args[0]||state.selected);break;case'scale':{const o=state.objects.find(x=>x.id===(args[0]||state.selected));if(!o)throw Error('object not found');const s=+(args[1]||args[0]);o.scale=[s,s,s];refreshUI();log('scaled '+o.id+' to '+s);break}case'move':case'tp':{const o=state.objects.find(x=>x.id===(args[0]||state.selected));if(!o)throw Error('object not found');o.position=[+args[1],+args[2],+args[3]];refreshUI();log('moved '+o.id);break}case'rotate':{const o=state.objects.find(x=>x.id===(args[0]||state.selected));if(!o)throw Error('object not found');const ax=args[1]||'y',deg=+(args[2]||0),i={x:0,y:1,z:2}[ax]??1;o.rotation[i]+=deg*Math.PI/180;refreshUI();log('rotated '+o.id);break}case'rename':{const o=selected();if(o){o.name=args.join(' ')||o.name;refreshUI()};break}case'tag':{const o=state.objects.find(x=>x.id===(args[0]||state.selected));if(o&&!o.tags.includes(args[1]))o.tags.push(args[1]);refreshUI();break}case'hide':{const o=state.objects.find(x=>x.id===(args[0]||state.selected));if(o)o.visible=false;refreshUI();break}case'show':{const o=state.objects.find(x=>x.id===(args[0]||state.selected));if(o)o.visible=true;refreshUI();break}case'grid':state.grid=args[0]!=='off';log('grid '+(state.grid?'on':'off'));break;case'hud':app.classList.toggle('hidden-ui');break;case'export':download('arc-room-scene.json',JSON.stringify(exportScene(),null,2));log('exported scene');break;case'save':localStorage.setItem('arc-room-scene',JSON.stringify(exportScene()));log('saved local scene');break;case'load':{const s=localStorage.getItem('arc-room-scene');if(s)loadScene(JSON.parse(s));else log('no local scene','err');break}case'reset':state.objects=[];state.selected=null;state.cam={yaw:.72,pitch:.62,dist:18,panX:0,panY:0,panZ:0};refreshUI();log('reset scene');break;default:throw Error('unknown command /'+name)}addReceipt(raw,before,clone(state.objects),true)}catch(e){log(e.message,'err');addReceipt(raw,before,clone(state.objects),false,e.message);toast(e.message,'err')}}function parseFlags(args){const out={};for(const a of args){const i=a.indexOf('=');if(i>0)out[a.slice(0,i)]=a.slice(i+1);else out[a]=true}return out}
+cmdEl.addEventListener('keydown',e=>{if(e.key==='Enter'){runCommand(cmdEl.value);cmdEl.value=''}});
+addEventListener('keydown',e=>{if(e.key==='F1'){e.preventDefault();app.classList.toggle('hidden-ui')}else if(e.key==='Delete'&&state.selected){despawn(state.selected)}else state.keys[e.key.toLowerCase()]=true});addEventListener('keyup',e=>state.keys[e.key.toLowerCase()]=false);
+canvas.addEventListener('mousedown',e=>{state.mouse.down=true;state.mouse.x=e.clientX;state.mouse.y=e.clientY});addEventListener('mouseup',e=>{if(state.mouse.down&&Math.hypot(e.clientX-state.mouse.x,e.clientY-state.mouse.y)<4)pickObject(e.clientX,e.clientY);state.mouse.down=false});addEventListener('mousemove',e=>{if(!state.mouse.down)return;const dx=e.clientX-state.mouse.x,dy=e.clientY-state.mouse.y;state.mouse.x=e.clientX;state.mouse.y=e.clientY;state.cam.yaw-=dx*.006;state.cam.pitch=Math.max(-1.2,Math.min(1.2,state.cam.pitch-dy*.006))});canvas.addEventListener('wheel',e=>{e.preventDefault();state.cam.dist=Math.max(3,Math.min(80,state.cam.dist+Math.sign(e.deltaY)*1.1))},{passive:false});
+document.getElementById('choose').onclick=()=>document.getElementById('file').click();document.getElementById('file').onchange=e=>handleFiles(e.target.files);document.getElementById('spawnCube').onclick=()=>spawnMesh(makeCube(),'cube',{position:[0,1,0],tags:['primitive']});document.getElementById('spawnMarker').onclick=()=>spawnMesh(makeMarker(),'marker',{position:[0,1,0],tags:['primitive','marker']});document.getElementById('clearAll').onclick=()=>despawn('all');document.getElementById('exportJson').onclick=()=>download('arc-room-scene.json',JSON.stringify(exportScene(),null,2));document.getElementById('saveLocal').onclick=()=>{localStorage.setItem('arc-room-scene',JSON.stringify(exportScene()));log('saved to localStorage')};document.getElementById('loadLocal').onclick=()=>{const s=localStorage.getItem('arc-room-scene');if(s)loadScene(JSON.parse(s));else log('no local scene','err')};document.getElementById('resetScene').onclick=()=>runCommand('/reset');
+const drop=document.getElementById('drop');['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('drag')}));['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('drag')}));drop.addEventListener('drop',e=>handleFiles(e.dataTransfer.files));
+log('ARC-Room shell online. Upload .OBJ/.STL or /summon cube.','warn');spawnMesh(makeCube(),'sample_cube',{position:[0,1,0],tags:['sample'],scale:[1.2,1.2,1.2]});draw();
+</script>
+</body>
+</html>

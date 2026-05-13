@@ -1,0 +1,24 @@
+{
+  "name": "arc-room-tactical-mesh-object-intake-lab",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Dependency-free tactical browser app for uploading, commanding, scaling, and exporting AI-readable 3D room objects.",
+  "scripts": {
+    "start": "python3 -m http.server 5173",
+    "serve": "python3 -m http.server 5173"
+  },
+  "keywords": [
+    "3d",
+    "obj",
+    "stl",
+    "tactical-mesh",
+    "ai-room",
+    "scene-export",
+    "browser-app",
+    "local-first",
+    "canvas",
+    "model-viewer"
+  ],
+  "author": "Gary Doman / GareBear99",
+  "license": "MIT"
+}

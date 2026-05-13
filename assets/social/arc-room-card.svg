@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640">
+  <defs>
+    <radialGradient id="g" cx="50%" cy="50%" r="70%">
+      <stop offset="0" stop-color="#073b1a"/>
+      <stop offset="0.55" stop-color="#020804"/>
+      <stop offset="1" stop-color="#000"/>
+    </radialGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#00ff41" stroke-width="1" opacity="0.18"/>
+    </pattern>
+    <filter id="glow"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect width="1280" height="640" fill="url(#g)"/>
+  <rect width="1280" height="640" fill="url(#grid)"/>
+  <path d="M160 500 L420 180 L760 430 L1060 170" fill="none" stroke="#00ff41" stroke-width="3" opacity="0.45"/>
+  <g filter="url(#glow)" stroke="#00ff41" fill="none" opacity="0.9">
+    <rect x="830" y="230" width="170" height="170" transform="rotate(18 915 315)"/>
+    <path d="M830 230l80-70 170 0-80 70M1000 400l80-70V160M830 230v170l80-70v-170"/>
+  </g>
+  <text x="76" y="110" fill="#ffb000" font-family="Consolas, monospace" font-size="24" letter-spacing="4">// TACTICAL MESH OBJECT INTAKE //</text>
+  <text x="76" y="205" fill="#00ff41" font-family="Consolas, monospace" font-size="68" font-weight="700">ARC-ROOM</text>
+  <text x="80" y="265" fill="#b7ffd0" font-family="Consolas, monospace" font-size="28">Upload · Command · Scale · Export AI-readable 3D rooms</text>
+  <text x="80" y="350" fill="#00ff41" font-family="Consolas, monospace" font-size="23">/summon cube scale=2 at=0,1,0</text>
+  <text x="80" y="390" fill="#00ff41" font-family="Consolas, monospace" font-size="23">/despawn selected   /export json   /save</text>
+  <rect x="76" y="450" width="560" height="48" fill="none" stroke="#00ff41" opacity="0.6"/>
+  <text x="96" y="482" fill="#ffb000" font-family="Consolas, monospace" font-size="20">Dependency-free local browser app</text>
+</svg>
